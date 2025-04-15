@@ -1,50 +1,84 @@
 package com.example.smart_task_scheduler;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
-
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
+import java.util.Calendar;
 
 public class AddTaskActivity extends AppCompatActivity {
 
-    private EditText editTextTitle, editTextCategory, editTextTime, editTextPriority;
-    private Button buttonAddTask;
+    private EditText editTaskTitle, editPriority;
+    private Spinner spinnerCategory, spinnerTaskType;
+    private Button btnPickDeadline, btnSaveTask;
+    private Switch switchReminder;
+
+    private String selectedDeadline = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_task);
 
-        // Hooking UI components
-        editTextTitle = findViewById(R.id.editTextTitle);
-        editTextCategory = findViewById(R.id.editTextCategory);
-        editTextTime = findViewById(R.id.editTextTime);
-        editTextPriority = findViewById(R.id.editTextPriority);
-        buttonAddTask = findViewById(R.id.buttonAddTask);
+        // Initialize views
+        editTaskTitle = findViewById(R.id.editTaskTitle);
+        spinnerCategory = findViewById(R.id.spinnerCategory);
+        spinnerTaskType = findViewById(R.id.spinnerTaskType);
+        editPriority = findViewById(R.id.editPriority);
+        btnPickDeadline = findViewById(R.id.btnPickDeadline);
+        btnSaveTask = findViewById(R.id.btnSaveTask);
+        switchReminder = findViewById(R.id.switchReminder);
 
-        // Add Task button listener
-        buttonAddTask.setOnClickListener(v -> {
-            String title = editTextTitle.getText().toString().trim();
-            String category = editTextCategory.getText().toString().trim();
-            String time = editTextTime.getText().toString().trim();
-            String priority = editTextPriority.getText().toString().trim();
+        // Sample Spinner Setup (you can load from strings.xml or database)
+        ArrayAdapter<CharSequence> categoryAdapter = ArrayAdapter.createFromResource(this,
+                R.array.category_options, android.R.layout.simple_spinner_item);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(categoryAdapter);
 
-            if (title.isEmpty() || category.isEmpty() || time.isEmpty() || priority.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+        ArrayAdapter<CharSequence> taskTypeAdapter = ArrayAdapter.createFromResource(this,
+                R.array.task_type_options, android.R.layout.simple_spinner_item);
+        taskTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTaskType.setAdapter(taskTypeAdapter);
+
+        // Date Picker Dialog for Deadline
+        btnPickDeadline.setOnClickListener(view -> {
+            final Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog dialog = new DatePickerDialog(this, (view1, year1, month1, dayOfMonth) -> {
+                selectedDeadline = dayOfMonth + "/" + (month1 + 1) + "/" + year1;
+                btnPickDeadline.setText("Deadline: " + selectedDeadline);
+            }, year, month, day);
+
+            dialog.show();
+        });
+
+        // Save Task button logic
+        btnSaveTask.setOnClickListener(v -> {
+            String title = editTaskTitle.getText().toString().trim();
+            String category = spinnerCategory.getSelectedItem().toString();
+            String taskType = spinnerTaskType.getSelectedItem().toString();
+            String priority = editPriority.getText().toString().trim();
+            boolean reminderSet = switchReminder.isChecked();
+
+            if (title.isEmpty() || priority.isEmpty() || selectedDeadline.isEmpty()) {
+                Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             Intent resultIntent = new Intent();
             resultIntent.putExtra("title", title);
             resultIntent.putExtra("category", category);
-            resultIntent.putExtra("time", time);
+            resultIntent.putExtra("taskType", taskType);
             resultIntent.putExtra("priority", priority);
+            resultIntent.putExtra("deadline", selectedDeadline);
+            resultIntent.putExtra("reminder", reminderSet);
+
             setResult(RESULT_OK, resultIntent);
             finish();
         });
     }
 }
-

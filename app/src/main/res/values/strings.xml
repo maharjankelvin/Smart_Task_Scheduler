@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Smart_Task_Scheduler</string>
+
+        <string-array name="category_options">
+            <item>Personal</item>
+            <item>Professional</item>
+        </string-array>
+
+        <string-array name="task_type_options">
+            <item>Daily</item>
+            <item>Weekly</item>
+            <item>One-Time</item>
+        </string-array>
+
 </resources>
